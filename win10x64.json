@@ -1,0 +1,103 @@
+{
+  "builders": [
+    {
+      "communicator": "winrm",
+      "disk_size": "{{user `disk_size`}}",
+      "floppy_files": [
+        "floppy/slim_win10.bat",
+        "floppy/00-run-all-scripts.cmd",
+        "floppy/01-install-wget.cmd",
+        "floppy/_download.cmd",
+        "floppy/_packer_config.cmd",
+        "floppy/_post_update_install.bat",
+        "floppy/autologon.bat",
+        "floppy/disablewinupdate.bat",
+        "floppy/win10x64/Autounattend.xml",
+        "floppy/fixnetwork.ps1",
+        "floppy/install-winrm.cmd",
+        "floppy/oracle-cert.cer",
+        "floppy/passwordchange.bat",
+        "floppy/powerconfig.bat",
+        "floppy/update.bat",
+        "floppy/zz-start-transports.cmd"
+      ],
+      "guest_additions_mode": "attach",
+      "guest_additions_url": "{{user `guest_additions_url`}}",
+      "guest_os_type": "Windows10_64",
+      "hard_drive_interface": "sata",
+      "headless": "{{ user `headless` }}",
+      "iso_checksum": "{{ user `iso_checksum` }}",
+      "iso_checksum_type": "md5",
+      "iso_url": "{{ user `iso_url` }}",
+      "shutdown_command": "{{ user `shutdown_command`}}",
+      "post_shutdown_delay": "30s",
+      "type": "virtualbox-iso",
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--memory",
+          "{{ user `memory` }}"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--cpus",
+          "{{ user `cpus` }}"
+        ],
+        [
+          "setextradata",
+          "{{.Name}}",
+          "VBoxInternal/CPUM/CMPXCHG16B",
+          "1"
+        ]
+      ],
+      "vm_name": "win10x64",
+      "winrm_password": "vagrant",
+      "winrm_timeout": "10000s",
+      "winrm_username": "vagrant"
+    }
+  ],
+  "post-processors": [
+    {
+      "compression_level": 1,
+      "keep_input_artifact": false,
+      "output": "box/{{.Provider}}/win10x64-{{user `cm`}}{{user `cm_version`}}-{{user `version`}}.box",
+      "type": "vagrant",
+      "vagrantfile_template": "tpl/win10x64.tpl"
+    }
+  ],
+  "provisioners": [
+    {
+      "environment_vars": [
+        "CM={{user `cm`}}",
+        "CM_VERSION={{user `cm_version`}}",
+        "UPDATE={{user `update`}}"
+      ],
+      "scripts": [
+        "script/vagrant.bat",
+        "script/cmtool.bat",
+        "script/vmtool.bat",
+        "script/clean.bat",
+        "script/ultradefrag.bat",
+        "script/uninstall-7zip.bat",
+        "script/sdelete.bat"
+      ],
+      "type": "windows-shell"
+    }
+  ],
+  "variables": {
+    "cpus": "2",
+    "memory": "2048",
+    "guest_additions_url": "",
+    "cm": "chef",
+    "cm_version": "",
+    "disk_size": "40960",
+    "headless": "false",
+    "iso_checksum": "70ea72fb3ff11771dcc0a36e2850e29e",
+    "iso_url": "/tmp/win_iso/en_windows_10_business_editions_version_1803_updated_march_2018_x64_dvd_12063333.iso",
+    "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c 'Packer Shutdown'",
+    "update": "true",
+    "version": "0.1.0"
+  }
+}
